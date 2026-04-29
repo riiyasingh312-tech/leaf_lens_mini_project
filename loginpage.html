@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaf Lens — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-dark: #1a3a2a; --green-mid: #2d6a4f; --green-light: #52b788;
+      --green-pale: #b7e4c7; --cream: #f8f4ec; --text: #1a2a1e; --muted: #5a7a62;
+    }
+    body {
+      min-height: 100vh; background: var(--green-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Sans', sans-serif; overflow: hidden; position: relative;
+    }
+    .bg-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25; animation: float 8s ease-in-out infinite; }
+    .bg-blob:nth-child(1) { width: 400px; height: 400px; background: #52b788; top: -100px; left: -100px; animation-delay: 0s; }
+    .bg-blob:nth-child(2) { width: 300px; height: 300px; background: #2d6a4f; bottom: -80px; right: -80px; animation-delay: 3s; }
+    .bg-blob:nth-child(3) { width: 200px; height: 200px; background: #b7e4c7; top: 50%; left: 60%; animation-delay: 5s; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+
+    .card {
+      position: relative; z-index: 10;
+      background: rgba(248,244,236,0.97);
+      border-radius: 24px; padding: 48px 44px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+      animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes slideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+
+    .logo-area { text-align: center; margin-bottom: 32px; }
+    .logo-icon { font-size: 48px; display: block; margin-bottom: 10px; animation: sway 3s ease-in-out infinite; }
+    @keyframes sway { 0%,100% { transform:rotate(-5deg); } 50% { transform:rotate(5deg); } }
+    .logo-area h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--green-dark); }
+    .logo-area p { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+    /* Tab switcher */
+    .tab-switcher {
+      display: flex; background: #eef5f0; border-radius: 12px;
+      padding: 4px; margin-bottom: 28px; gap: 4px;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px; border: none; border-radius: 9px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+      cursor: pointer; background: transparent; color: var(--muted); transition: all 0.2s;
+    }
+    .tab-btn.active { background: #fff; color: var(--green-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+    .form-section { display: none; }
+    .form-section.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 0.78rem; font-weight: 500; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
+    input {
+      width: 100%; padding: 13px 15px; border: 1.5px solid #dde8df;
+      border-radius: 11px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+      color: var(--text); background: #fff; transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    input:focus { border-color: var(--green-light); box-shadow: 0 0 0 3px rgba(82,183,136,0.15); }
+
+    .btn-main {
+      width: 100%; padding: 14px; background: var(--green-mid); color: #fff;
+      border: none; border-radius: 11px; font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 6px;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(45,106,79,0.35);
+    }
+    .btn-main:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+    .msg {
+      padding: 10px 14px; border-radius: 10px; font-size: 0.85rem;
+      margin-bottom: 16px; display: none;
+    }
+    .msg.error { background: #fff0f0; border: 1px solid #ffcccc; color: #c0392b; }
+    .msg.success { background: #eafaf1; border: 1px solid #abebc6; color: #1e8449; }
+
+    .hint { text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 16px; }
+    .hint span { color: var(--green-mid); font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+
+  <div class="card">
+    <div class="logo-area">
+      <span class="logo-icon">🌿</span>
+      <h1>Leaf Lens</h1>
+      <p>A Beginner's Guide to Plant Health</p>
+    </div>
+
+    <!-- Tab Switcher -->
+    <div class="tab-switcher">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="form-section active" id="form-login">
+      <div class="msg error" id="loginError"></div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter your username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter your password"/>
+      </div>
+      <button class="btn-main" onclick="handleLogin()">Sign In</button>
+      <p class="hint">Demo account: <span>admin / admin123</span></p>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div class="form-section" id="form-signup">
+      <div class="msg error" id="signupError"></div>
+      <div class="msg success" id="signupSuccess"></div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="signupName" placeholder="Enter your full name"/>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="signupUser" placeholder="Choose a username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signupPass" placeholder="Create a password"/>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="signupConfirm" placeholder="Repeat your password"/>
+      </div>
+      <button class="btn-main" onclick="handleSignup()">Create Account</button>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.form-section').forEach(function(f) { f.classList.remove('active'); });
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('form-' + tab).classList.add('active');
+    }
+
+    function handleLogin() {
+      var user = document.getElementById('loginUser').value.trim();
+      var pass = document.getElementById('loginPass').value.trim();
+      var err = document.getElementById('loginError');
+
+      if (!user || !pass) {
+        showMsg(err, 'Please enter both username and password.'); return;
+      }
+
+      // Check saved users from signup
+      var users = JSON.parse(localStorage.getItem('leaflens_users') || '{}');
+      users['admin'] = 'admin123'; // default
+
+      if (users[user] && users[user] === pass) {
+        localStorage.setItem('leaflens_user', user);
+        window.location.href = 'dashboard.html';
+      } else {
+        // Try Flask
+        fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, password: pass })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            localStorage.setItem('leaflens_user', user);
+            window.location.href = 'dashboard.html';
+          } else {
+            showMsg(err, 'Invalid username or password.');
+          }
+        })
+        .catch(function() {
+          showMsg(err, 'Invalid username or password.');
+        });
+      }
+    }
+
+    function handleSignup() {
+      var name = document.getElementById('signupName').value.trim();
+      var user = document.getElementById('signupUser').value.trim();
+      var pass = document.getElementById('signupPass').value.trim();
+      var confirm = document.getElementById('signupConfirm').value.trim();
+      var err = document.getElementById('signupError');
+      var suc = document.getElementById('signupSuccess');
+
+      err.style.display = 'none';
+      suc.style.display = 'none';
+
+      if (!name || !user || !pass || !confirm) {
+        showMsg(err, 'Please fill in all fields.'); return;
+      }
+      if (pass.length < 6) {
+        showMsg(err, 'Password must be at least 6 characters.'); return;
+      }
+      if (pass !== confirm) {
+        showMsg(err, 'Passwords do not match.'); return;
+      }
+
+      var users = JSON.parse(localStorage.getItem('leaflens_users') || '{}');
+      if (users[user]) {
+        showMsg(err, 'Username already taken. Choose another.'); return;
+      }
+
+      users[user] = pass;
+      localStorage.setItem('leaflens_users', JSON.stringify(users));
+      showMsg(suc, 'Account created! You can now login. 🌿');
+
+      // Clear fields
+      document.getElementById('signupName').value = '';
+      document.getElementById('signupUser').value = '';
+      document.getElementById('signupPass').value = '';
+      document.getElementById('signupConfirm').value = '';
+
+      // Auto switch to login after 1.5s
+      setTimeout(function() { switchTab('login'); }, 1500);
+    }
+
+    function showMsg(el, text) {
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        var activeForm = document.querySelector('.form-section.active').id;
+        if (activeForm === 'form-login') handleLogin();
+        else handleSignup();
+      }
+    });
+  </script>
+</body>
+</html>
